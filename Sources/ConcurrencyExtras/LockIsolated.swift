@@ -1,3 +1,7 @@
+#if Foundation && canImport(Foundation)
+  public import Foundation
+#endif
+
 /// A generic wrapper for isolating a mutable value with a lock.
 ///
 /// If you trust the sendability of the underlying value, consider using ``UncheckedSendable``,
@@ -90,6 +94,17 @@ extension LockIsolated where Value: Sendable {
     }
   }
 }
+
+#if Foundation && canImport(Foundation)
+  extension NSRecursiveLock {
+    @inlinable @discardableResult
+    @_spi(Internals) public func sync<R>(work: () throws -> R) rethrows -> R {
+      self.lock()
+      defer { self.unlock() }
+      return try work()
+    }
+  }
+#endif
 
 #if swift(<6)
   @available(*, deprecated, message: "Lock isolated values should not be equatable")
