@@ -1,4 +1,10 @@
-import Foundation
+#if Foundation
+  #if canImport(FoundationEssentials)
+    import FoundationEssentials
+  #else
+    import Foundation
+  #endif
+#endif
 
 extension Task where Success == Never, Failure == Never {
   /// Suspends the current task a number of times before resuming with the goal of allowing other
@@ -17,14 +23,18 @@ extension Task where Success == Never, Failure == Never {
 
 /// The number of yields `Task.megaYield()` invokes by default.
 ///
-/// Can be overridden by setting the `TASK_MEGA_YIELD_COUNT` environment variable.
-public let _defaultMegaYieldCount = max(
-  0,
-  min(
-    ProcessInfo.processInfo.environment["TASK_MEGA_YIELD_COUNT"].flatMap(Int.init) ?? 20,
-    10_000
+/// Can be overridden using `TASK_MEGA_YIELD_COUNT` when the Foundation trait is enabled.
+#if Foundation
+  public let _defaultMegaYieldCount = max(
+    0,
+    min(
+      ProcessInfo.processInfo.environment["TASK_MEGA_YIELD_COUNT"].flatMap(Int.init) ?? 20,
+      10_000
+    )
   )
-)
+#else
+  public let _defaultMegaYieldCount = 20
+#endif
 
 extension Task where Failure == Never {
   /// An async function that never returns.

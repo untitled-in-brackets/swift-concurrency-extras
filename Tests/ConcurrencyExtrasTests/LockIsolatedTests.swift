@@ -69,6 +69,13 @@
       XCTAssertEqual(lockIsolated.value, 1)
     }
 
+    func testWithValueSupportsReentrantReads() {
+      let value = LockIsolated(0)
+      value.withValue { _ in
+        XCTAssertEqual(value.value, 0)
+      }
+    }
+
     func testSetValue() {
       let initialValue = 0
       let lockIsolated = LockIsolated(initialValue)

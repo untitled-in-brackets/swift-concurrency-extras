@@ -1,15 +1,13 @@
-import Foundation
-
 extension AsyncThrowingStream where Failure == any Error {
   /// Produces an `AsyncThrowingStream` from an `AsyncSequence` by consuming the sequence till it
   /// terminates, rethrowing any failure.
   ///
   /// - Parameter sequence: An async sequence.
   public init<S: AsyncSequence>(_ sequence: S) where S.Element == Element, S: Sendable {
-    let lock = NSLock()
+    let lock = RecursiveLock()
     let iterator = UncheckedBox<S.AsyncIterator?>(wrappedValue: nil)
     self.init {
-      lock.withLock {
+      lock.sync {
         if iterator.wrappedValue == nil {
           iterator.wrappedValue = sequence.makeAsyncIterator()
         }
